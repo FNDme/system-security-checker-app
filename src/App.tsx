@@ -1,11 +1,38 @@
-import { cn } from "@/lib/utils";
-import { Button } from "./components/ui/button";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Layout from "./components/layout/Layout";
+import Scan from "./pages/Scan";
+import Settings from "./pages/Settings";
+import { ScanProvider } from "./context/ScanContext";
+import { useSettingsStore } from "@/lib/settings";
+import { useEffect } from "react";
 
 export default function App() {
+  const { appSettings } = useSettingsStore();
+
+  useEffect(() => {
+    if (appSettings.darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [appSettings.darkMode]);
+
   return (
-    <div className="bg-red-500">
-      <h1 className={cn("text-2xl font-bold")}>Hello World</h1>
-      <Button variant="secondary">Click me</Button>
-    </div>
+    <Router>
+      <ScanProvider>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Navigate to="/scan" />} />
+            <Route path="/scan" element={<Scan />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </Layout>
+      </ScanProvider>
+    </Router>
   );
 }
