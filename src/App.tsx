@@ -1,10 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  HashRouter,
-} from "react-router-dom";
+import { Routes, Route, Navigate, HashRouter } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Scan from "./pages/Scan";
 import Settings from "./pages/Settings";

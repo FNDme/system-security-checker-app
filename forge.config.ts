@@ -9,8 +9,13 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 
 const config: ForgeConfig = {
   packagerConfig: {
+    name: "System Security Checker",
+    executableName: "System Security Checker",
+    appCategoryType: "Utility",
+    appCopyright: "Expero Inc.",
     asar: true,
     icon: "./src/assets/icons/icon",
+    appVersion: "1.0.0",
   },
   rebuildConfig: {},
   makers: [

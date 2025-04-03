@@ -15,8 +15,14 @@ import { useEffect, useState } from "react";
 export default function Settings() {
   const { userSettings, appSettings, setUserSettings, setAppSettings } =
     useSettingsStore();
-  const [email, setEmail] = useState(userSettings.email);
-  const [fullName, setFullName] = useState(userSettings.fullName);
+  const [userData, setUserData] = useState({
+    email: "",
+    fullName: "",
+  });
+  const [supabaseData, setSupabaseData] = useState({
+    supabaseUrl: "",
+    supabaseKey: "",
+  });
   const [systemInfo, setSystemInfo] = useState({
     osName: "",
     osVersion: "",
@@ -24,30 +30,45 @@ export default function Settings() {
   });
 
   const handleUserSettingsSave = () => {
-    const fullNameValue = fullName.trim();
-    const emailValue = email.trim();
+    const fullNameValue = userData.fullName.trim();
+    const emailValue = userData.email.trim();
     if (
       fullNameValue !== "" &&
       emailValue !== "" &&
-      (fullNameValue !== userSettings.fullName.trim() ||
-        email.trim() !== userSettings.email.trim())
+      (fullNameValue !== userData.fullName.trim() ||
+        emailValue !== userData.email.trim())
     ) {
       setUserSettings({
-        email: email.trim(),
-        fullName: fullName.trim(),
+        email: emailValue,
+        fullName: fullNameValue,
       });
     }
   };
 
+  const handleSupabaseSettingsSave = () => {
+    setAppSettings({
+      supabaseUrl: supabaseData.supabaseUrl,
+      supabaseKey: supabaseData.supabaseKey,
+    });
+  };
+
   useEffect(() => {
-    const getSystemInfo = async () => {
+    const setSystemData = async () => {
       const info = await window.electronAPI.getSystemInfo();
       setSystemInfo({
         ...systemInfo,
         ...info,
       });
     };
-    getSystemInfo();
+    setSystemData();
+    setUserData({
+      email: userSettings.email,
+      fullName: userSettings.fullName,
+    });
+    setSupabaseData({
+      supabaseUrl: appSettings.supabaseUrl,
+      supabaseKey: appSettings.supabaseKey,
+    });
   }, []);
 
   return (
@@ -73,8 +94,10 @@ export default function Settings() {
               id="email"
               type="email"
               placeholder={"Enter your email"}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={userData.email}
+              onChange={(e) =>
+                setUserData({ ...userData, email: e.target.value })
+              }
             />
           </div>
           <div className="space-y-2">
@@ -83,17 +106,19 @@ export default function Settings() {
               id="fullName"
               type="text"
               placeholder={"Enter your full name"}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              value={userData.fullName}
+              onChange={(e) =>
+                setUserData({ ...userData, fullName: e.target.value })
+              }
             />
           </div>
           <Button
             onClick={handleUserSettingsSave}
             disabled={
-              !email.trim() ||
-              !fullName.trim() ||
-              (email.trim() === userSettings.email &&
-                fullName.trim() === userSettings.fullName)
+              !userData.email.trim() ||
+              !userData.fullName.trim() ||
+              (userData.email.trim() === userSettings.email.trim() &&
+                userData.fullName.trim() === userSettings.fullName.trim())
             }
           >
             Save User Settings
@@ -101,6 +126,51 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Supabase Settings</CardTitle>
+          <CardDescription>Configure your Supabase settings.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Input
+            id="supabaseUrl"
+            type="text"
+            placeholder={"Enter your Supabase URL"}
+            value={supabaseData.supabaseUrl}
+            onChange={(e) =>
+              setSupabaseData({ ...supabaseData, supabaseUrl: e.target.value })
+            }
+          />
+          <Input
+            id="supabaseKey"
+            type="text"
+            placeholder={"Enter your Supabase Key"}
+            value={supabaseData.supabaseKey}
+            onChange={(e) =>
+              setSupabaseData({ ...supabaseData, supabaseKey: e.target.value })
+            }
+          />
+          <div className="w-full flex justify-between">
+            <Button
+              onClick={handleSupabaseSettingsSave}
+              disabled={!supabaseData.supabaseUrl || !supabaseData.supabaseKey}
+            >
+              Save Supabase Settings
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSupabaseData({
+                  supabaseUrl: "",
+                  supabaseKey: "",
+                });
+              }}
+            >
+              Remove Supabase Settings
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>App Settings</CardTitle>

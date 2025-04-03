@@ -1,4 +1,4 @@
-import { mapResultsToReport, sendReportToSupabase } from "@/lib/supabase";
+import { mapResultsToReport } from "@/lib/utils";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useDeviceData } from "./DeviceDataContext";
 import { useSettingsStore } from "@/lib/settings";
@@ -43,7 +43,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     screenLock: { value: 0, status: "idle" },
   });
   const { osName, osVersion, serial } = useDeviceData();
-  const { userSettings } = useSettingsStore();
+  const { userSettings, appSettings } = useSettingsStore();
 
   const startScan = async () => {
     setStatus("running");
@@ -104,7 +104,11 @@ export function ScanProvider({ children }: { children: ReactNode }) {
   };
 
   const canStartScan = Boolean(
-    userSettings.email && userSettings.fullName && serial
+    userSettings.email &&
+      userSettings.fullName &&
+      serial &&
+      appSettings.supabaseUrl &&
+      appSettings.supabaseKey
   );
 
   const sendReport = async () => {
@@ -115,7 +119,11 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       osVersion,
       new Date().toISOString()
     );
-    const success = await sendReportToSupabase(
+    const success = await window.electronAPI.sendReport(
+      {
+        supabaseUrl: appSettings.supabaseUrl,
+        supabaseKey: appSettings.supabaseKey,
+      },
       userSettings.email,
       userSettings.fullName,
       serial,

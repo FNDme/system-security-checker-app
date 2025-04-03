@@ -2,7 +2,7 @@
   "name": "system-security-checker-app",
   "productName": "system-security-checker-app",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Expero Inc. Internal Security Check",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",

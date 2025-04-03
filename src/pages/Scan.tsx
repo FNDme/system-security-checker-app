@@ -20,21 +20,18 @@ import {
 import { cn } from "@/lib/utils";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
-export default function Scan() {
-  const { status, reportStatus, canStartScan, startScan, sendReport, results } =
-    useScan();
-
-  const SecurityCheck = ({
-    icon: Icon,
-    title,
-    status,
-    details,
-  }: {
-    icon: LucideIcon;
-    title: string;
-    status: CheckStatus;
-    details: string;
-  }) => (
+function SecurityCheck({
+  icon: Icon,
+  title,
+  status,
+  details,
+}: {
+  icon: LucideIcon;
+  title: string;
+  status: CheckStatus;
+  details: string;
+}) {
+  return (
     <div className="flex items-center gap-4 p-4 rounded-lg border">
       <div
         className={cn(
@@ -68,6 +65,11 @@ export default function Scan() {
       )}
     </div>
   );
+}
+
+export default function Scan() {
+  const { status, reportStatus, canStartScan, startScan, sendReport, results } =
+    useScan();
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -171,8 +173,10 @@ export default function Scan() {
                 <div className="flex-1">
                   <h3 className="font-medium">Send Report</h3>
                   <p className="text-sm text-muted-foreground">
-                    {reportStatus === "sent"
+                    {reportStatus === "sent" && canStartScan
                       ? "Report sent successfully"
+                      : !canStartScan
+                      ? "Please fill in your email, full name and supabase settings"
                       : reportStatus === "failed"
                       ? "Failed to send report"
                       : reportStatus === "sending"

@@ -121,3 +121,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom styles */
+
+/* rounded and small scrollbar */
+::-webkit-scrollbar {
+  width: 16px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: var(--background);
+  margin: 0 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: var(--muted-foreground);
+  border: 6px solid var(--background);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--background);
+}

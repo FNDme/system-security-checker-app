@@ -1,3 +1,5 @@
+import { securityReport } from "./types/supabase";
+
 export interface IElectronAPI {
   getSystemInfo: () => Promise<{
     osName: string;
@@ -13,6 +15,16 @@ export interface IElectronAPI {
     | null
   >;
   checkScreenLock: () => Promise<number | null>;
+  sendReport: (
+    supabaseSettings: {
+      supabaseUrl: string;
+      supabaseKey: string;
+    },
+    userEmail: string,
+    userFullName: string,
+    deviceId: string,
+    report: securityReport
+  ) => Promise<boolean>;
 }
 
 declare global {
