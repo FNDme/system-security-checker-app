@@ -36,16 +36,16 @@ function SecurityCheck({
       <div
         className={cn(
           "p-2 rounded-full",
-          status === "success" && "bg-green-100 dark:bg-green-900",
-          status === "failed" && "bg-red-100 dark:bg-red-900",
+          status === "success" && "bg-green-100 dark:bg-green-900/30",
+          status === "failed" && "bg-red-100 dark:bg-red-900/30",
           status === "running" && "bg-muted"
         )}
       >
         <Icon
           className={cn(
             "h-5 w-5",
-            status === "success" && "text-green-500",
-            status === "failed" && "text-red-500",
+            status === "success" && "text-green-600",
+            status === "failed" && "text-red-600",
             status === "running" && "text-muted-foreground"
           )}
         />
@@ -153,18 +153,20 @@ export default function Scan() {
                 <div
                   className={cn(
                     "p-2 rounded-full",
-                    reportStatus === "sent" && "bg-green-100 dark:bg-green-900",
-                    reportStatus === "failed" && "bg-red-100 dark:bg-red-900",
+                    reportStatus === "sent" &&
+                      "bg-green-100 dark:bg-green-900/30",
+                    reportStatus === "failed" &&
+                      "bg-red-100 dark:bg-red-900/30",
                     reportStatus === "sending" &&
-                      "bg-blue-200 dark:bg-blue-800",
-                    reportStatus === "idle" && "bg-blue-200 dark:bg-blue-800"
+                      "bg-blue-200 dark:bg-blue-800/30",
+                    reportStatus === "idle" && "bg-blue-200 dark:bg-blue-800/30"
                   )}
                 >
                   <Send
                     className={cn(
                       "h-5 w-5",
-                      reportStatus === "sent" && "text-green-500",
-                      reportStatus === "failed" && "text-red-500",
+                      reportStatus === "sent" && "text-green-600",
+                      reportStatus === "failed" && "text-red-600",
                       reportStatus === "sending" &&
                         "text-blue-600 dark:text-blue-300",
                       reportStatus === "idle" &&

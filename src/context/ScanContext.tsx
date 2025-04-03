@@ -54,53 +54,38 @@ export function ScanProvider({ children }: { children: ReactNode }) {
       screenLock: { value: 0, status: "running" },
     });
 
-    try {
-      const antivirus = await window.electronAPI.checkAntivirus();
-      setResults((prev) => ({
-        ...prev,
-        antivirus: {
-          exists: true,
-          name: antivirus,
-          status: "success",
-        },
-      }));
-    } catch (error) {
-      setResults((prev) => ({
-        ...prev,
-        antivirus: { exists: false, name: "", status: "failed" },
-      }));
-      setStatus("failed");
-    }
+    const antivirus = await window.electronAPI.checkAntivirus();
+    setResults((prev) => ({
+      ...prev,
+      antivirus: {
+        exists: antivirus !== null,
+        name: antivirus || "",
+        status: antivirus !== null ? "success" : "failed",
+      },
+    }));
 
-    try {
-      const encryption = await window.electronAPI.checkDiskEncryption();
-      setResults((prev) => ({
-        ...prev,
-        encryption: { exists: true, name: encryption, status: "success" },
-      }));
-    } catch (error) {
-      setResults((prev) => ({
-        ...prev,
-        encryption: { exists: false, name: "", status: "failed" },
-      }));
-      setStatus("failed");
-    }
+    const encryption = await window.electronAPI.checkDiskEncryption();
+    setResults((prev) => ({
+      ...prev,
+      encryption: {
+        exists: encryption !== null,
+        name: encryption || "",
+        status: encryption !== null ? "success" : "failed",
+      },
+    }));
 
-    try {
-      const screenLock = await window.electronAPI.checkScreenLock();
-      setResults((prev) => ({
-        ...prev,
-        screenLock: { value: screenLock, status: "success" },
-      }));
-    } catch (error) {
-      setResults((prev) => ({
-        ...prev,
-        screenLock: { value: 5, status: "failed" },
-      }));
-      setStatus("failed");
-    }
+    const screenLock = await window.electronAPI.checkScreenLock();
+    setResults((prev) => ({
+      ...prev,
+      screenLock: {
+        value: screenLock,
+        status: screenLock !== null ? "success" : "failed",
+      },
+    }));
 
-    setStatus("success");
+    setStatus(
+      !!antivirus && !!encryption && !!screenLock ? "success" : "failed"
+    );
   };
 
   const canStartScan = Boolean(
