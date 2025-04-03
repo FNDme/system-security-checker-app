@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { CheckStatus, useScan } from "@/context/ScanContext";
 import {
   Loader2,
@@ -19,9 +18,11 @@ import {
   Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 export default function Scan() {
-  const { status, reportStatus, startScan, sendReport, results } = useScan();
+  const { status, reportStatus, canStartScan, startScan, sendReport, results } =
+    useScan();
 
   const SecurityCheck = ({
     icon: Icon,
@@ -182,24 +183,27 @@ export default function Scan() {
                 <Button
                   onClick={sendReport}
                   disabled={
-                    reportStatus === "sending" || reportStatus === "sent"
+                    !canStartScan ||
+                    reportStatus === "sending" ||
+                    reportStatus === "sent"
                   }
                   variant="outline"
+                  className="flex items-center gap-2"
                 >
                   {reportStatus === "sending" ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="animate-spin" />
                       Sending...
                     </>
                   ) : reportStatus === "sent" ? (
                     <>
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      <CheckCircle2 />
                       Sent
                     </>
                   ) : reportStatus === "failed" ? (
                     <>
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Failed
+                      <ReloadIcon />
+                      Retry
                     </>
                   ) : (
                     "Send Report"

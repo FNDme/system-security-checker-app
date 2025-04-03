@@ -1,9 +1,12 @@
+import { mapResultsToReport, sendReportToSupabase } from "@/lib/supabase";
 import { createContext, useContext, useState, ReactNode } from "react";
+import { useDeviceData } from "./DeviceDataContext";
+import { useSettingsStore } from "@/lib/settings";
 
 export type CheckStatus = "idle" | "running" | "success" | "failed";
 export type ReportStatus = "idle" | "sending" | "sent" | "failed";
 
-interface ScanResults {
+export interface ScanResults {
   antivirus: {
     exists: boolean;
     name: string;
@@ -23,6 +26,7 @@ interface ScanResults {
 interface ScanContextType {
   status: CheckStatus;
   reportStatus: ReportStatus;
+  canStartScan: boolean;
   startScan: () => Promise<void>;
   sendReport: () => Promise<void>;
   results: ScanResults;
@@ -38,11 +42,12 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     encryption: { exists: false, name: "", status: "idle" },
     screenLock: { value: 0, status: "idle" },
   });
+  const { osName, osVersion, serial } = useDeviceData();
+  const { userSettings } = useSettingsStore();
 
   const startScan = async () => {
     setStatus("running");
     setReportStatus("idle");
-    // Reset results
     setResults({
       antivirus: { exists: false, name: "", status: "running" },
       encryption: { exists: false, name: "", status: "running" },
@@ -50,12 +55,12 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     });
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const antivirus = await window.electronAPI.checkAntivirus();
       setResults((prev) => ({
         ...prev,
         antivirus: {
           exists: true,
-          name: "Antivirus",
+          name: antivirus,
           status: "success",
         },
       }));
@@ -68,10 +73,10 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const encryption = await window.electronAPI.checkDiskEncryption();
       setResults((prev) => ({
         ...prev,
-        encryption: { exists: true, name: "Encryption", status: "success" },
+        encryption: { exists: true, name: encryption, status: "success" },
       }));
     } catch (error) {
       setResults((prev) => ({
@@ -82,10 +87,10 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const screenLock = await window.electronAPI.checkScreenLock();
       setResults((prev) => ({
         ...prev,
-        screenLock: { value: 5, status: "success" },
+        screenLock: { value: screenLock, status: "success" },
       }));
     } catch (error) {
       setResults((prev) => ({
@@ -98,20 +103,41 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     setStatus("success");
   };
 
+  const canStartScan = Boolean(
+    userSettings.email && userSettings.fullName && serial
+  );
+
   const sendReport = async () => {
     setReportStatus("sending");
-    try {
-      // Simulate sending report
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+    const report = mapResultsToReport(
+      results,
+      osName,
+      osVersion,
+      new Date().toISOString()
+    );
+    const success = await sendReportToSupabase(
+      userSettings.email,
+      userSettings.fullName,
+      serial,
+      report
+    );
+    if (success) {
       setReportStatus("sent");
-    } catch (error) {
+    } else {
       setReportStatus("failed");
     }
   };
 
   return (
     <ScanContext.Provider
-      value={{ status, reportStatus, startScan, sendReport, results }}
+      value={{
+        status,
+        reportStatus,
+        canStartScan,
+        startScan,
+        sendReport,
+        results,
+      }}
     >
       {children}
     </ScanContext.Provider>
