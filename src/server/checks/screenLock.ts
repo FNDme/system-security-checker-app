@@ -52,53 +52,67 @@ function checkMacOsScreenLock() {
   return null;
 }
 
-function getPreferredLanguage() {
-  return execPowershell("(Get-WinUserLanguageList).LocalizedName")
-    .split(" ")[0]
-    .toLowerCase();
+async function getPreferredLanguage() {
+  try {
+    return (await execPowershell("(Get-WinUserLanguageList).LocalizedName"))
+      .split(" ")[0]
+      .toLowerCase();
+  } catch (error) {
+    console.error("Error getting preferred language:", error);
+    return "english"; // Default to English if there's an error
+  }
 }
 
 function getPowerConfigCommand(pattern: string) {
   return `powercfg -q SCHEME_CURRENT SUB_VIDEO VIDEOIDLE | Select-String -Pattern "${pattern}"`;
 }
 
-function checkWindowsScreenLock() {
-  let timeout;
+async function checkWindowsScreenLock() {
+  try {
+    let timeout;
 
-  const preferredLanguage = getPreferredLanguage();
-  const acPowerSettings =
-    preferredLanguage === "spanish"
-      ? "Índice de configuración de corriente alterna actual"
-      : "Current AC Power Setting Index";
-  const dcPowerSettings =
-    preferredLanguage === "spanish"
-      ? "Índice de configuración de corriente continua actual"
-      : "Current DC Power Setting Index";
+    const preferredLanguage = await getPreferredLanguage();
+    const acPowerSettings =
+      preferredLanguage === "spanish"
+        ? "Índice de configuración de corriente alterna actual"
+        : "Current AC Power Setting Index";
+    const dcPowerSettings =
+      preferredLanguage === "spanish"
+        ? "Índice de configuración de corriente continua actual"
+        : "Current DC Power Setting Index";
 
-  const pluggedIn = execPowershell(getPowerConfigCommand(acPowerSettings));
-  const pluggedInTimeout = pluggedIn.split(":")[1].trim();
-
-  const haveBattery =
-    execPowershell(
-      "Get-CimInstance -ClassName Win32_Battery -ErrorAction SilentlyContinue"
-    ) !== "";
-  if (haveBattery) {
-    const onBattery = execPowershell(getPowerConfigCommand(dcPowerSettings));
-
-    const onBatteryTimeout = onBattery.split(":")[1].trim();
-
-    timeout = Math.max(
-      parseInt(onBatteryTimeout, 16),
-      parseInt(pluggedInTimeout, 16)
+    const pluggedIn = await execPowershell(
+      getPowerConfigCommand(acPowerSettings)
     );
-  } else {
-    timeout = parseInt(pluggedInTimeout, 16);
-  }
+    const pluggedInTimeout = pluggedIn.split(":")[1].trim();
 
-  if (timeout === 0) {
+    const haveBattery =
+      (await execPowershell(
+        "Get-CimInstance -ClassName Win32_Battery -ErrorAction SilentlyContinue"
+      )) !== "";
+
+    if (haveBattery) {
+      const onBattery = await execPowershell(
+        getPowerConfigCommand(dcPowerSettings)
+      );
+      const onBatteryTimeout = onBattery.split(":")[1].trim();
+
+      timeout = Math.max(
+        parseInt(onBatteryTimeout, 16),
+        parseInt(pluggedInTimeout, 16)
+      );
+    } else {
+      timeout = parseInt(pluggedInTimeout, 16);
+    }
+
+    if (timeout === 0) {
+      return null;
+    }
+    return timeout / 60;
+  } catch (error) {
+    console.error("Error checking Windows screen lock:", error);
     return null;
   }
-  return timeout / 60;
 }
 
 function checkLinuxScreenLock() {
@@ -144,12 +158,12 @@ function checkLinuxScreenLock() {
   return null;
 }
 
-export function checkScreenLock(): number | null {
+export async function checkScreenLock(): Promise<number | null> {
   const system = os.platform();
   if (system === "darwin") {
     return checkMacOsScreenLock();
   } else if (system === "win32") {
-    return checkWindowsScreenLock();
+    return await checkWindowsScreenLock();
   } else if (system === "linux") {
     return checkLinuxScreenLock();
   }

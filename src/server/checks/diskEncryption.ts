@@ -2,8 +2,8 @@ import { execSync } from "child_process";
 import { execPowershell, executeQuery } from "../terminal";
 import os from "os";
 
-function checkMacOsDiskEncryption() {
-  const result = executeQuery("SELECT * FROM disk_encryption;");
+async function checkMacOsDiskEncryption() {
+  const result = await executeQuery("SELECT * FROM disk_encryption;");
   if (
     result.some((disk: { encrypted: string }) => parseInt(disk.encrypted) === 1)
   ) {
@@ -20,18 +20,23 @@ const BITLOCKER_STATUS = {
   encrypted_only_space_used: 7,
 };
 
-function checkWindowsDiskEncryption() {
-  const result = execPowershell(
-    `(New-Object -ComObject Shell.Application).NameSpace('C:').Self.ExtendedProperty('System.Volume.BitLockerProtection')`
-  );
-  if (result === BITLOCKER_STATUS["encrypted"].toString()) {
-    return "BitLocker";
-  } else if (
-    result === BITLOCKER_STATUS["encrypted_only_space_used"].toString()
-  ) {
-    return "Bitlocker: only space used";
+async function checkWindowsDiskEncryption() {
+  try {
+    const result = await execPowershell(
+      `(New-Object -ComObject Shell.Application).NameSpace('C:').Self.ExtendedProperty('System.Volume.BitLockerProtection')`
+    );
+    if (result === BITLOCKER_STATUS["encrypted"].toString()) {
+      return "BitLocker";
+    } else if (
+      result === BITLOCKER_STATUS["encrypted_only_space_used"].toString()
+    ) {
+      return "Bitlocker: only space used";
+    }
+    return null;
+  } catch (error) {
+    console.error("Error checking Windows disk encryption:", error);
+    return null;
   }
-  return null;
 }
 
 function checkLinuxDiskEncryption() {
@@ -50,12 +55,12 @@ function checkLinuxDiskEncryption() {
   return null;
 }
 
-export function checkDiskEncryption(): string | null {
+export async function checkDiskEncryption(): Promise<string | null> {
   const system = os.platform();
   if (system === "darwin") {
-    return checkMacOsDiskEncryption();
+    return await checkMacOsDiskEncryption();
   } else if (system === "win32") {
-    return checkWindowsDiskEncryption();
+    return await checkWindowsDiskEncryption();
   } else if (system === "linux") {
     return checkLinuxDiskEncryption();
   }

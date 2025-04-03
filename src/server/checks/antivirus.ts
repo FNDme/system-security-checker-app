@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 
 const ANTIVIRUS_PROCESSES = "clamav|sophos|eset|comodo|avg|avast|bitdefender";
 
-function checkMacOsAntivirus() {
+async function checkMacOsAntivirus() {
   const queries = [
     "SELECT * FROM xprotect_entries;",
     "SELECT * FROM xprotect_meta;",
@@ -12,7 +12,7 @@ function checkMacOsAntivirus() {
     "SELECT * FROM processes WHERE name LIKE '%MRT%' OR name LIKE '%XProtect%';",
   ];
   for (const q of queries) {
-    const result = executeQuery(q);
+    const result = await executeQuery(q);
     if (result.length > 0) {
       return "XProtect/MRT (Built-in macOS protection)";
     }
@@ -20,19 +20,24 @@ function checkMacOsAntivirus() {
   return null;
 }
 
-function checkWindowsAntivirus() {
-  const result = execPowershell(
-    `wmic /node:localhost /namespace:\\\\root\\SecurityCenter2 path AntiVirusProduct Get DisplayName`
-  );
+async function checkWindowsAntivirus() {
+  try {
+    const result = await execPowershell(
+      `wmic /node:localhost /namespace:\\\\root\\SecurityCenter2 path AntiVirusProduct Get DisplayName`
+    );
 
-  const antivirusNames = result
-    .split("\n")
-    .filter((s) => s.trim().toLowerCase() !== "displayname")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-    .join(", ");
+    const antivirusNames = result
+      .split("\n")
+      .filter((s) => s.trim().toLowerCase() !== "displayname")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .join(", ");
 
-  return antivirusNames || null;
+    return antivirusNames || null;
+  } catch (error) {
+    console.error("Error checking Windows antivirus:", error);
+    return null;
+  }
 }
 
 function checkLinuxAntivirus() {
@@ -50,12 +55,12 @@ function checkLinuxAntivirus() {
   return null;
 }
 
-export function checkAntivirus(): string | null {
+export async function checkAntivirus(): Promise<string | null> {
   const system = os.platform();
   if (system === "darwin") {
-    return checkMacOsAntivirus();
+    return await checkMacOsAntivirus();
   } else if (system === "win32") {
-    return checkWindowsAntivirus();
+    return await checkWindowsAntivirus();
   } else if (system === "linux") {
     return checkLinuxAntivirus();
   }
