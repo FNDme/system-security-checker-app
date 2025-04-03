@@ -5,7 +5,7 @@ export interface IElectronAPI {
     osName: string;
     osVersion: string;
   }>;
-  checkAntivirus: () => Promise<string>;
+  checkAntivirus: () => Promise<string | null>;
   checkDiskEncryption: () => Promise<
     | "FileVault"
     | "BitLocker"

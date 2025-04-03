@@ -91,14 +91,16 @@ export default function Scan() {
         <CardContent className="space-y-4">
           <div className="flex gap-4">
             <Button onClick={startScan} disabled={status === "running"}>
-              {status === "running" && (
+              {status === "running" ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Scanning...
                 </>
+              ) : status === "idle" ? (
+                "Start Scan"
+              ) : (
+                "Retry Scan"
               )}
-              {status === "idle" && "Start Scan"}
-              {status === "failed" || (status === "success" && "Retry Scan")}
             </Button>
           </div>
 

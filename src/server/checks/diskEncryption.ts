@@ -50,7 +50,7 @@ function checkLinuxDiskEncryption() {
   return null;
 }
 
-export function checkDiskEncryption() {
+export function checkDiskEncryption(): string | null {
   const system = os.platform();
   if (system === "darwin") {
     return checkMacOsDiskEncryption();
@@ -59,5 +59,5 @@ export function checkDiskEncryption() {
   } else if (system === "linux") {
     return checkLinuxDiskEncryption();
   }
-  throw new Error("Unsupported operating system.");
+  return null;
 }

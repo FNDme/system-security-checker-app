@@ -144,7 +144,7 @@ function checkLinuxScreenLock() {
   return null;
 }
 
-export function checkScreenLock() {
+export function checkScreenLock(): number | null {
   const system = os.platform();
   if (system === "darwin") {
     return checkMacOsScreenLock();
@@ -153,5 +153,5 @@ export function checkScreenLock() {
   } else if (system === "linux") {
     return checkLinuxScreenLock();
   }
-  throw new Error("Unsupported operating system.");
+  return null;
 }

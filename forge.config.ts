@@ -20,9 +20,23 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({}),
-    new MakerZIP({}, ["darwin"]),
+    new MakerZIP({}, ["darwin", "linux"]),
     new MakerRpm({}),
     new MakerDeb({}),
+  ],
+  publishers: [
+    {
+      name: "@electron-forge/publisher-github",
+      config: {
+        repository: {
+          owner: "FNDme",
+          name: "system-security-checker-app",
+        },
+        draft: false,
+        prerelease: false,
+        generateReleaseNotes: true,
+      },
+    },
   ],
   plugins: [
     new VitePlugin({

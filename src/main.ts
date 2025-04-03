@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { getDeviceSerial, getOSInfo } from "./server/osInfo";
@@ -6,6 +6,15 @@ import { checkAntivirus } from "./server/checks/antivirus";
 import { checkDiskEncryption } from "./server/checks/diskEncryption";
 import { checkScreenLock } from "./server/checks/screenLock";
 import { sendReportToSupabase } from "./server/supabase";
+import { updateElectronApp, UpdateSourceType } from "update-electron-app";
+
+updateElectronApp({
+  updateSource: {
+    type: UpdateSourceType.ElectronPublicUpdateService,
+    repo: "FNDme/system-security-checker-app",
+  },
+  updateInterval: "1 hour",
+});
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -20,8 +29,9 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
-    autoHideMenuBar: true,
   });
+
+  Menu.setApplicationMenu(null);
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -61,6 +71,9 @@ const createWindow = () => {
       );
     }
   );
+
+  // open dev tools
+  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished

@@ -50,7 +50,7 @@ function checkLinuxAntivirus() {
   return null;
 }
 
-export function checkAntivirus() {
+export function checkAntivirus(): string | null {
   const system = os.platform();
   if (system === "darwin") {
     return checkMacOsAntivirus();
@@ -59,5 +59,5 @@ export function checkAntivirus() {
   } else if (system === "linux") {
     return checkLinuxAntivirus();
   }
-  throw new Error("Unsupported operating system.");
+  return null;
 }
