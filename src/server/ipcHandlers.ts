@@ -11,7 +11,7 @@ import { checkDiskEncryption } from "./checks/diskEncryption";
 import { sendReportToSupabase, getLastReport } from "./supabase";
 
 export const setupIpcHandlers = () => {
-  ipcMain.handle("system-info:get", () => ({
+  ipcMain.handle("system-info:device-info", () => ({
     ...getOSInfo(),
     serial: getDeviceSerial(),
   }));

@@ -1,5 +1,11 @@
 import { mapResultsToReport } from "@/lib/utils";
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { useDeviceData } from "./DeviceDataContext";
 import { useSettingsStore } from "@/lib/settings";
 import { securityReport } from "@/types/supabase";
@@ -46,6 +52,13 @@ export function ScanProvider({ children }: { children: ReactNode }) {
   });
   const { osName, osVersion, serial } = useDeviceData();
   const { userSettings, appSettings } = useSettingsStore();
+
+  useEffect(() => {
+    window.electronAPI.onRunScan(() => {
+      console.log("run-scan");
+      startScan();
+    });
+  }, []);
 
   const startScan = async () => {
     setStatus("running");

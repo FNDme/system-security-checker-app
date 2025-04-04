@@ -20,6 +20,35 @@ const notificationService = new NotificationService();
 let hasInitializedHandlers = false;
 let tray: Tray | null = null;
 
+const handleAddTray = () => {
+  if (!tray) {
+    tray = createTray({
+      onOpen: () => {
+        const windows = BrowserWindow.getAllWindows();
+        if (windows.length === 0) createWindow();
+        else windows[0].show();
+      },
+      onQuit: () => app.quit(),
+      onRunScan: () => {
+        const windows = BrowserWindow.getAllWindows();
+        let window: BrowserWindow | null = null;
+        if (windows.length === 0) window = createWindow();
+        else window = windows[0];
+        setTimeout(() => {
+          if (window) window.webContents.send("run-scan");
+        }, 1000);
+      },
+    });
+  }
+};
+
+const handleRemoveTray = () => {
+  if (tray) {
+    tray.destroy();
+    tray = null;
+  }
+};
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
@@ -39,21 +68,16 @@ app.setLoginItemSettings({
 
 const createWindow = () => {
   // Create the browser window.
-  createMainWindow();
-  // toggle developer tools
-  BrowserWindow.getAllWindows().forEach((window) => {
-    window.webContents.openDevTools();
-  });
+  const window = createMainWindow();
   listenForConfigChanges((config) => {
     if (config.keepInBackground) {
-      tray = createTray(createWindow, app.quit);
+      handleAddTray();
       app.setLoginItemSettings({
         ...app.getLoginItemSettings(),
         openAtLogin: true,
       });
     } else {
-      tray?.destroy();
-      tray = null;
+      handleRemoveTray();
       app.setLoginItemSettings({
         ...app.getLoginItemSettings(),
         openAtLogin: false,
@@ -65,6 +89,8 @@ const createWindow = () => {
     hasInitializedHandlers = true;
   }
   notificationService.start();
+
+  return window;
 };
 
 // This method will be called when Electron has finished
@@ -72,7 +98,7 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
   if (!tray && config.keepInBackground) {
-    tray = createTray(createWindow, app.quit);
+    handleAddTray();
   }
 
   const isHidden = process.argv.includes("--hidden");

@@ -9,18 +9,30 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 
 const config: ForgeConfig = {
   packagerConfig: {
+    name: "System Security Checker",
     appCategoryType: "Utility",
     appCopyright: "Expero Inc.",
     asar: true,
-    icon: "./src/assets/icons/icon",
+    icon: "./build/assets/icons/icon",
     appVersion: "1.0.0",
+    extraResource: ["./build/assets"],
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
-    new MakerZIP({}, ["darwin", "linux"]),
-    new MakerRpm({}),
-    new MakerDeb({}),
+    new MakerSquirrel({
+      setupIcon: "./build/assets/icons/icon.ico",
+    }),
+    new MakerZIP({}, ["darwin"]),
+    new MakerRpm({
+      options: {
+        icon: "./build/assets/icons/icon.png",
+      },
+    }),
+    new MakerDeb({
+      options: {
+        icon: "./build/assets/icons/icon.png",
+      },
+    }),
   ],
   publishers: [
     {

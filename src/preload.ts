@@ -4,13 +4,14 @@ import { securityReport } from "./types/supabase";
 
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 contextBridge.exposeInMainWorld("electronAPI", {
-  systemDarkMode: () =>
-    ipcRenderer.invoke("prefer-dark-mode:system") as Promise<boolean>,
+  // ? Two Way IPC handlers
+  // system info
   getSystemInfo: () =>
-    ipcRenderer.invoke("system-info:get") as Promise<{
+    ipcRenderer.invoke("system-info:device-info") as Promise<{
       osName: string;
       osVersion: string;
     }>,
+  // checks
   checkAntivirus: () =>
     ipcRenderer.invoke("check:antivirus") as Promise<string | null>,
   checkDiskEncryption: () =>
@@ -24,6 +25,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     >,
   checkScreenLock: () =>
     ipcRenderer.invoke("check:screen-lock") as Promise<number | null>,
+  // supabase
   sendReport: (
     supabaseSettings: {
       supabaseUrl: string;
@@ -56,6 +58,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
       userEmail,
       deviceId
     ) as Promise<securityReport | null>,
+  // config file
   configUpdateKeepInBackground: (value: boolean) =>
     ipcRenderer.invoke(
       "config:update-keep-in-background",
@@ -68,4 +71,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     }>,
   configUpdateLastReportDate: (date: string) =>
     ipcRenderer.invoke("config:update-last-report-date", date) as Promise<void>,
+
+  // ? One Way IPC handlers
+  onRunScan: (callback: () => void) => ipcRenderer.on("run-scan", callback),
 });

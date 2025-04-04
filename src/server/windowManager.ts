@@ -1,10 +1,12 @@
 import { BrowserWindow, Menu } from "electron";
 import path from "node:path";
+import { getAppIcon } from "./appIcon";
 
 export const createMainWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1000,
     height: 800,
+    icon: getAppIcon(),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },

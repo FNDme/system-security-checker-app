@@ -1,6 +1,6 @@
 import { Notification } from "electron";
-import path from "node:path";
 import { getConfig } from "./config";
+import { getAppIcon } from "./appIcon";
 
 export interface NotificationServiceOptions {
   title?: string;
@@ -19,9 +19,7 @@ export class NotificationService {
       body:
         options.body ??
         "It's been more than a month since your last security report. Please run a new scan.",
-      iconPath:
-        options.iconPath ??
-        path.join(__dirname, "../../src/assets/icons/icon.png"),
+      iconPath: options.iconPath ?? getAppIcon(),
       intervalMs: options.intervalMs ?? 60 * 60 * 1000, // 1 hour
     };
   }

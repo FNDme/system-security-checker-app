@@ -39,6 +39,7 @@ export interface IElectronAPI {
     keepInBackground: boolean;
     lastReportDate: string | null;
   }>;
+  onRunScan: (callback: () => void) => void;
 }
 
 declare global {
