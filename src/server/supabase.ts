@@ -56,3 +56,27 @@ export async function sendReportToSupabase(
     return false;
   }
 }
+
+export async function getLastReport(
+  supabaseSettings: {
+    supabaseUrl: string;
+    supabaseKey: string;
+  },
+  userEmail: string,
+  deviceId: string
+) {
+  const supabaseClient = getSupabaseClient(
+    supabaseSettings.supabaseUrl,
+    supabaseSettings.supabaseKey
+  );
+  const { data, error } = await supabaseClient()
+    .from("security_reports")
+    .select("*")
+    .eq("user_email", userEmail)
+    .eq("device_id", deviceId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) throw error;
+  return data[0] || null;
+}

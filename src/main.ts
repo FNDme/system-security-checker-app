@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from "electron";
+import { app, BrowserWindow, Menu } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { getDeviceSerial, getOSInfo } from "./server/osInfo";
@@ -7,6 +7,7 @@ import { checkDiskEncryption } from "./server/checks/diskEncryption";
 import { checkScreenLock } from "./server/checks/screenLock";
 import { sendReportToSupabase } from "./server/supabase";
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
+import { initializeHandlers } from "./handlers";
 
 updateElectronApp({
   updateSource: {
@@ -42,35 +43,7 @@ const createWindow = () => {
     );
   }
 
-  ipcMain.handle("system-info:get", () => ({
-    ...getOSInfo(),
-    serial: getDeviceSerial(),
-  }));
-
-  ipcMain.handle("check:antivirus", () => {
-    return checkAntivirus();
-  });
-
-  ipcMain.handle("check:disk-encryption", () => {
-    return checkDiskEncryption();
-  });
-
-  ipcMain.handle("check:screen-lock", () => {
-    return checkScreenLock();
-  });
-
-  ipcMain.handle(
-    "send:report",
-    (_, supabaseSettings, userEmail, userFullName, deviceId, report) => {
-      return sendReportToSupabase(
-        supabaseSettings,
-        userEmail,
-        userFullName,
-        deviceId,
-        report
-      );
-    }
-  );
+  initializeHandlers();
 };
 
 // This method will be called when Electron has finished

@@ -2,6 +2,7 @@ import { mapResultsToReport } from "@/lib/utils";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useDeviceData } from "./DeviceDataContext";
 import { useSettingsStore } from "@/lib/settings";
+import { securityReport } from "@/types/supabase";
 
 export type CheckStatus = "idle" | "running" | "success" | "failed";
 export type ReportStatus = "idle" | "sending" | "sent" | "failed";
@@ -29,6 +30,7 @@ interface ScanContextType {
   canStartScan: boolean;
   startScan: () => Promise<void>;
   sendReport: () => Promise<void>;
+  getLastReport: () => Promise<securityReport | null>;
   results: ScanResults;
 }
 
@@ -121,6 +123,18 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getLastReport = async () => {
+    const lastReport = await window.electronAPI.getLastReport(
+      {
+        supabaseUrl: appSettings.supabaseUrl,
+        supabaseKey: appSettings.supabaseKey,
+      },
+      userSettings.email,
+      serial
+    );
+    return lastReport;
+  };
+
   return (
     <ScanContext.Provider
       value={{
@@ -129,6 +143,7 @@ export function ScanProvider({ children }: { children: ReactNode }) {
         canStartScan,
         startScan,
         sendReport,
+        getLastReport,
         results,
       }}
     >

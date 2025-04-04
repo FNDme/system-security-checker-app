@@ -16,9 +16,12 @@ import {
   Key,
   LucideIcon,
   Send,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { useEffect, useState } from "react";
+import { securityReport } from "@/types/supabase";
 
 function SecurityCheck({
   icon: Icon,
@@ -68,8 +71,33 @@ function SecurityCheck({
 }
 
 export default function Scan() {
-  const { status, reportStatus, canStartScan, startScan, sendReport, results } =
-    useScan();
+  const {
+    status,
+    reportStatus,
+    canStartScan,
+    startScan,
+    sendReport,
+    results,
+    getLastReport,
+  } = useScan();
+  const [lastReport, setLastReport] = useState<securityReport | null>(null);
+
+  useEffect(() => {
+    const fetchLastReport = async () => {
+      const report = await getLastReport();
+      if (report) {
+        setLastReport(report);
+      }
+    };
+    fetchLastReport();
+  }, [getLastReport]);
+
+  const isReportOld = (report: securityReport) => {
+    const reportDate = new Date(report.last_check);
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    return reportDate < oneMonthAgo;
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -89,7 +117,7 @@ export default function Scan() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex justify-between">
             <Button onClick={startScan} disabled={status === "running"}>
               {status === "running" ? (
                 <>
@@ -102,6 +130,20 @@ export default function Scan() {
                 "Retry Scan"
               )}
             </Button>
+
+            {lastReport && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                {isReportOld(lastReport) ? (
+                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                )}
+                <span>
+                  Last report sent:{" "}
+                  {new Date(lastReport.last_check).toLocaleString()}
+                </span>
+              </div>
+            )}
           </div>
 
           {status !== "idle" && (

@@ -25,6 +25,14 @@ export interface IElectronAPI {
     deviceId: string,
     report: securityReport
   ) => Promise<boolean>;
+  getLastReport: (
+    supabaseSettings: {
+      supabaseUrl: string;
+      supabaseKey: string;
+    },
+    userEmail: string,
+    deviceId: string
+  ) => Promise<securityReport | null>;
 }
 
 declare global {
