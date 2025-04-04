@@ -4,7 +4,7 @@ import started from "electron-squirrel-startup";
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 import { getConfig, listenForConfigChanges } from "./server/config";
 import { createTray } from "./server/createTray";
-import { startLastReportNotificationInterval } from "./server/lastReportNotification";
+import { NotificationService } from "./server/lastReportNotification";
 import { createMainWindow } from "./server/windowManager";
 import { setupIpcHandlers } from "./server/ipcHandlers";
 
@@ -16,8 +16,8 @@ updateElectronApp({
   updateInterval: "1 hour",
 });
 
+const notificationService = new NotificationService();
 let hasInitializedHandlers = false;
-let backgroundInterval: NodeJS.Timeout | null = null;
 let tray: Tray | null = null;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -64,8 +64,7 @@ const createWindow = () => {
     setupIpcHandlers();
     hasInitializedHandlers = true;
   }
-  if (!backgroundInterval)
-    backgroundInterval = startLastReportNotificationInterval(true);
+  notificationService.start();
 };
 
 // This method will be called when Electron has finished
@@ -78,8 +77,7 @@ app.on("ready", () => {
 
   const isHidden = process.argv.includes("--hidden");
   if (isHidden) {
-    if (!backgroundInterval)
-      backgroundInterval = startLastReportNotificationInterval(true);
+    notificationService.start();
   } else {
     createWindow();
   }
@@ -104,7 +102,7 @@ app.on("activate", () => {
 });
 
 app.on("before-quit", () => {
-  if (backgroundInterval) clearInterval(backgroundInterval);
+  notificationService.stop();
 });
 
 // In this file you can include the rest of your app's specific main process
