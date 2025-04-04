@@ -28,21 +28,14 @@ export default function Settings() {
     osVersion: "",
     serial: "",
   });
-
+  const [keepInBackground, setKeepInBackground] = useState(false);
   const handleUserSettingsSave = () => {
     const fullNameValue = userData.fullName.trim();
     const emailValue = userData.email.trim();
-    if (
-      fullNameValue !== "" &&
-      emailValue !== "" &&
-      (fullNameValue !== userData.fullName.trim() ||
-        emailValue !== userData.email.trim())
-    ) {
-      setUserSettings({
-        email: emailValue,
-        fullName: fullNameValue,
-      });
-    }
+    setUserSettings({
+      email: emailValue,
+      fullName: fullNameValue,
+    });
   };
 
   const handleSupabaseSettingsSave = () => {
@@ -68,6 +61,9 @@ export default function Settings() {
     setSupabaseData({
       supabaseUrl: appSettings.supabaseUrl,
       supabaseKey: appSettings.supabaseKey,
+    });
+    window.electronAPI.configGet().then((config) => {
+      setKeepInBackground(config.keepInBackground);
     });
   }, []);
 
@@ -179,7 +175,23 @@ export default function Settings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-6">
+            <div className="space-y-0.5">
+              <Label>Keep in Background</Label>
+              <p className="text-sm text-muted-foreground">
+                Keep a process running in the background to notify you when you
+                might need to run a new report
+              </p>
+            </div>
+            <Switch
+              checked={keepInBackground}
+              onCheckedChange={(checked) => {
+                setKeepInBackground(checked);
+                window.electronAPI.configUpdateKeepInBackground(checked);
+              }}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-6">
             <div className="space-y-0.5">
               <Label>Dark Mode</Label>
               <p className="text-sm text-muted-foreground">

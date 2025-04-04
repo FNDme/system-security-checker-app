@@ -118,6 +118,9 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     );
     if (success) {
       setReportStatus("sent");
+      await window.electronAPI.configUpdateLastReportDate(
+        new Date().toISOString()
+      );
     } else {
       setReportStatus("failed");
     }

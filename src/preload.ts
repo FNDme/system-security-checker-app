@@ -56,4 +56,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
       userEmail,
       deviceId
     ) as Promise<securityReport | null>,
+  configUpdateKeepInBackground: (value: boolean) =>
+    ipcRenderer.invoke(
+      "config:update-keep-in-background",
+      value
+    ) as Promise<boolean>,
+  configGet: () =>
+    ipcRenderer.invoke("config:get") as Promise<{
+      keepInBackground: boolean;
+      lastReportDate: string | null;
+    }>,
+  configUpdateLastReportDate: (date: string) =>
+    ipcRenderer.invoke("config:update-last-report-date", date) as Promise<void>,
 });

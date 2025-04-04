@@ -33,6 +33,12 @@ export interface IElectronAPI {
     userEmail: string,
     deviceId: string
   ) => Promise<securityReport | null>;
+  configUpdateKeepInBackground: (value: boolean) => Promise<void>;
+  configUpdateLastReportDate: (date: string) => Promise<void>;
+  configGet: () => Promise<{
+    keepInBackground: boolean;
+    lastReportDate: string | null;
+  }>;
 }
 
 declare global {
