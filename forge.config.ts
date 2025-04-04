@@ -9,7 +9,7 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 
 const config: ForgeConfig = {
   packagerConfig: {
-    executableName: "system-security-checker",
+    executableName: "system-security-checker-app",
     name: "System Security Checker",
     appCategoryType: "Utility",
     appCopyright: "Expero Inc.",
@@ -31,7 +31,7 @@ const config: ForgeConfig = {
     }),
     new MakerDeb({
       options: {
-        name: "system-security-checker",
+        name: "system-security-checker-app",
         icon: "./build/assets/icons/icon.png",
       },
     }),
