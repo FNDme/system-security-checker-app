@@ -90,10 +90,10 @@ export function ScanProvider({ children }: { children: ReactNode }) {
     }));
 
     const screenLock = await window.electronAPI.checkScreenLock();
-    setResults((prev) => ({
+    setResults((prev: ScanResults) => ({
       ...prev,
       screenLock: {
-        value: screenLock,
+        value: screenLock || 0,
         status: screenLock !== null ? "success" : "failed",
       },
     }));

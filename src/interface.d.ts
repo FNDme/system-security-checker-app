@@ -4,6 +4,7 @@ export interface IElectronAPI {
   getSystemInfo: () => Promise<{
     osName: string;
     osVersion: string;
+    serial: string;
   }>;
   checkAntivirus: () => Promise<string | null>;
   checkDiskEncryption: () => Promise<

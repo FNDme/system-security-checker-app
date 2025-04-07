@@ -114,7 +114,8 @@ app.on("ready", () => {
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
   const config = getConfig();
-  if (config.keepInBackground && process.platform === "darwin") app.dock.hide();
+  if (config.keepInBackground && process.platform === "darwin")
+    app.dock?.hide();
   else if (!config.keepInBackground && process.platform !== "darwin")
     app.quit();
 });
