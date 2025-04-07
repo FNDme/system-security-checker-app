@@ -1,7 +1,7 @@
 {
   "name": "system-security-checker-app",
   "productName": "system-security-checker-app",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Expero Inc. Internal Security Check",
   "main": ".vite/build/main.js",
   "scripts": {
