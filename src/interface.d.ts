@@ -16,21 +16,19 @@ export interface IElectronAPI {
     | null
   >;
   checkScreenLock: () => Promise<number | null>;
+  saveSupabaseCredentials: (
+    supabaseUrl: string,
+    supabaseKey: string
+  ) => Promise<boolean>;
+  hasSupabaseCredentials: () => Promise<boolean>;
+  removeSupabaseCredentials: () => Promise<boolean>;
   sendReport: (
-    supabaseSettings: {
-      supabaseUrl: string;
-      supabaseKey: string;
-    },
     userEmail: string,
     userFullName: string,
     deviceId: string,
     report: securityReport
   ) => Promise<boolean>;
   getLastReport: (
-    supabaseSettings: {
-      supabaseUrl: string;
-      supabaseKey: string;
-    },
     userEmail: string,
     deviceId: string
   ) => Promise<securityReport | null>;

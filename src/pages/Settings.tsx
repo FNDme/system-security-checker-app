@@ -29,6 +29,8 @@ export default function Settings() {
     serial: "",
   });
   const [keepInBackground, setKeepInBackground] = useState(false);
+  const [hasSupabaseCredentials, setHasSupabaseCredentials] = useState(false);
+
   const handleUserSettingsSave = () => {
     const fullNameValue = userData.fullName.trim();
     const emailValue = userData.email.trim();
@@ -38,11 +40,21 @@ export default function Settings() {
     });
   };
 
-  const handleSupabaseSettingsSave = () => {
-    setAppSettings({
-      supabaseUrl: supabaseData.supabaseUrl,
-      supabaseKey: supabaseData.supabaseKey,
+  const handleSupabaseSettingsSave = async () => {
+    await window.electronAPI.saveSupabaseCredentials(
+      supabaseData.supabaseUrl,
+      supabaseData.supabaseKey
+    );
+    setSupabaseData({
+      supabaseUrl: "",
+      supabaseKey: "",
     });
+    setHasSupabaseCredentials(true);
+  };
+
+  const handleRemoveSupabaseSettings = async () => {
+    await window.electronAPI.removeSupabaseCredentials();
+    setHasSupabaseCredentials(false);
   };
 
   useEffect(() => {
@@ -58,12 +70,11 @@ export default function Settings() {
       email: userSettings.email,
       fullName: userSettings.fullName,
     });
-    setSupabaseData({
-      supabaseUrl: appSettings.supabaseUrl,
-      supabaseKey: appSettings.supabaseKey,
-    });
     window.electronAPI.configGet().then((config) => {
       setKeepInBackground(config.keepInBackground);
+    });
+    window.electronAPI.hasSupabaseCredentials().then((hasCredentials) => {
+      setHasSupabaseCredentials(hasCredentials);
     });
   }, []);
 
@@ -125,48 +136,56 @@ export default function Settings() {
       <Card>
         <CardHeader>
           <CardTitle>Supabase Settings</CardTitle>
-          <CardDescription>Configure your Supabase settings.</CardDescription>
+          <CardDescription>
+            {hasSupabaseCredentials
+              ? "Supabase credentials are already configured."
+              : "Configure your Supabase settings."}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input
-            id="supabaseUrl"
-            type="text"
-            placeholder={"Enter your Supabase URL"}
-            value={supabaseData.supabaseUrl}
-            onChange={(e) =>
-              setSupabaseData({ ...supabaseData, supabaseUrl: e.target.value })
-            }
-          />
-          <Input
-            id="supabaseKey"
-            type="text"
-            placeholder={"Enter your Supabase Key"}
-            value={supabaseData.supabaseKey}
-            onChange={(e) =>
-              setSupabaseData({ ...supabaseData, supabaseKey: e.target.value })
-            }
-          />
-          <div className="w-full flex justify-between">
-            <Button
-              onClick={handleSupabaseSettingsSave}
-              disabled={!supabaseData.supabaseUrl || !supabaseData.supabaseKey}
-            >
-              Save Supabase Settings
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSupabaseData({
-                  supabaseUrl: "",
-                  supabaseKey: "",
-                });
-              }}
-            >
+          {!hasSupabaseCredentials ? (
+            <>
+              <Input
+                id="supabaseUrl"
+                type="text"
+                placeholder={"Enter your Supabase URL"}
+                value={supabaseData.supabaseUrl}
+                onChange={(e) =>
+                  setSupabaseData({
+                    ...supabaseData,
+                    supabaseUrl: e.target.value,
+                  })
+                }
+              />
+              <Input
+                id="supabaseKey"
+                type="text"
+                placeholder={"Enter your Supabase Key"}
+                value={supabaseData.supabaseKey}
+                onChange={(e) =>
+                  setSupabaseData({
+                    ...supabaseData,
+                    supabaseKey: e.target.value,
+                  })
+                }
+              />
+              <Button
+                onClick={handleSupabaseSettingsSave}
+                disabled={
+                  !supabaseData.supabaseUrl || !supabaseData.supabaseKey
+                }
+              >
+                Save Supabase Settings
+              </Button>
+            </>
+          ) : (
+            <Button onClick={handleRemoveSupabaseSettings}>
               Remove Supabase Settings
             </Button>
-          </div>
+          )}
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>App Settings</CardTitle>

@@ -7,8 +7,6 @@ interface UserSettings {
 }
 
 interface AppSettings {
-  supabaseUrl: string;
-  supabaseKey: string;
   darkMode: boolean;
 }
 
@@ -26,8 +24,6 @@ const defaultUserSettings: UserSettings = {
 
 const defaultAppSettings: AppSettings = {
   darkMode: true,
-  supabaseUrl: "",
-  supabaseKey: "",
 };
 
 export const useSettingsStore = create<SettingsState>()(

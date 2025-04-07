@@ -1,5 +1,9 @@
 import { securityReport } from "@/types/supabase";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import {
+  createClient,
+  PostgrestError,
+  SupabaseClient,
+} from "@supabase/supabase-js";
 
 function getSupabaseClient(supabaseUrl: string, supabaseKey: string) {
   let client: SupabaseClient | null = null;
@@ -45,13 +49,14 @@ export async function sendReportToSupabase(
 
     if (error) throw error;
     return true;
-  } catch (error) {
-    console.error("Error sending report to Supabase:", error.message);
-    if (error.details) {
-      console.error("Error details:", error.details);
+  } catch (error: unknown) {
+    const err = error as PostgrestError;
+    console.error("Error sending report to Supabase:", err.message);
+    if (err.details) {
+      console.error("Error details:", err.details);
     }
-    if (error.hint) {
-      console.error("Hint:", error.hint);
+    if (err.hint) {
+      console.error("Hint:", err.hint);
     }
     return false;
   }

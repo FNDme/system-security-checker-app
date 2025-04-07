@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckStatus, useScan } from "@/context/ScanContext";
+import { useReport } from "@/context/ReportContext";
 import {
   Loader2,
   CheckCircle2,
@@ -19,7 +20,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { securityReport } from "@/types/supabase";
 
@@ -71,16 +71,15 @@ function SecurityCheck({
 }
 
 export default function Scan() {
-  const {
-    status,
-    reportStatus,
-    canStartScan,
-    startScan,
-    sendReport,
-    results,
-    getLastReport,
-  } = useScan();
+  const { status, startScan, results } = useScan();
+  const { reportStatus, sendReport, getLastReport, checkReportPrerequisites } =
+    useReport();
   const [lastReport, setLastReport] = useState<securityReport | null>(null);
+  const [prerequisites, setPrerequisites] = useState<{
+    hasUserSettings: boolean;
+    hasSupabaseCredentials: boolean;
+    missingFields: string[];
+  } | null>(null);
 
   useEffect(() => {
     const fetchLastReport = async () => {
@@ -92,12 +91,23 @@ export default function Scan() {
     fetchLastReport();
   }, [getLastReport]);
 
+  useEffect(() => {
+    const checkPrerequisites = async () => {
+      const prereqs = await checkReportPrerequisites();
+      setPrerequisites(prereqs);
+    };
+    checkPrerequisites();
+  }, [checkReportPrerequisites]);
+
   const isReportOld = (report: securityReport) => {
     const reportDate = new Date(report.last_check);
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
     return reportDate < oneMonthAgo;
   };
+
+  const canSendReport =
+    prerequisites?.hasUserSettings && prerequisites?.hasSupabaseCredentials;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -117,7 +127,7 @@ export default function Scan() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4 items-center">
             <Button onClick={startScan} disabled={status === "running"}>
               {status === "running" ? (
                 <>
@@ -219,10 +229,17 @@ export default function Scan() {
                 <div className="flex-1">
                   <h3 className="font-medium">Send Report</h3>
                   <p className="text-sm text-muted-foreground">
-                    {reportStatus === "sent" && canStartScan
+                    {reportStatus === "sent"
                       ? "Report sent successfully"
-                      : !canStartScan
-                      ? "Please fill in your email, full name and supabase settings"
+                      : !canSendReport &&
+                        prerequisites &&
+                        prerequisites.missingFields &&
+                        prerequisites.missingFields.length > 0
+                      ? `Please fill in ${prerequisites.missingFields.join(
+                          ", "
+                        )}`
+                      : !canSendReport && !prerequisites?.hasSupabaseCredentials
+                      ? "Please fill in your supabase credentials"
                       : reportStatus === "failed"
                       ? "Failed to send report"
                       : reportStatus === "sending"
@@ -231,9 +248,9 @@ export default function Scan() {
                   </p>
                 </div>
                 <Button
-                  onClick={sendReport}
+                  onClick={() => sendReport(results)}
                   disabled={
-                    !canStartScan ||
+                    !canSendReport ||
                     reportStatus === "sending" ||
                     reportStatus === "sent"
                   }
@@ -250,13 +267,11 @@ export default function Scan() {
                       <CheckCircle2 />
                       Sent
                     </>
-                  ) : reportStatus === "failed" ? (
-                    <>
-                      <ReloadIcon />
-                      Retry
-                    </>
                   ) : (
-                    "Send Report"
+                    <>
+                      <Send />
+                      Send Report
+                    </>
                   )}
                 </Button>
               </div>

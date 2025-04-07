@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("system-info:device-info") as Promise<{
       osName: string;
       osVersion: string;
+      serial: string;
     }>,
   // checks
   checkAntivirus: () =>
@@ -26,11 +27,17 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkScreenLock: () =>
     ipcRenderer.invoke("check:screen-lock") as Promise<number | null>,
   // supabase
+  saveSupabaseCredentials: (supabaseUrl: string, supabaseKey: string) =>
+    ipcRenderer.invoke(
+      "supabase:save-credentials",
+      supabaseUrl,
+      supabaseKey
+    ) as Promise<boolean>,
+  hasSupabaseCredentials: () =>
+    ipcRenderer.invoke("supabase:has-credentials") as Promise<boolean>,
+  removeSupabaseCredentials: () =>
+    ipcRenderer.invoke("supabase:remove-credentials") as Promise<boolean>,
   sendReport: (
-    supabaseSettings: {
-      supabaseUrl: string;
-      supabaseKey: string;
-    },
     userEmail: string,
     userFullName: string,
     deviceId: string,
@@ -38,23 +45,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
   ) =>
     ipcRenderer.invoke(
       "supabase:send-report",
-      supabaseSettings,
       userEmail,
       userFullName,
       deviceId,
       report
     ) as Promise<boolean>,
-  getLastReport: (
-    supabaseSettings: {
-      supabaseUrl: string;
-      supabaseKey: string;
-    },
-    userEmail: string,
-    deviceId: string
-  ) =>
+  getLastReport: (userEmail: string, deviceId: string) =>
     ipcRenderer.invoke(
       "supabase:get-last-report",
-      supabaseSettings,
       userEmail,
       deviceId
     ) as Promise<securityReport | null>,
@@ -64,14 +62,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
       "config:update-keep-in-background",
       value
     ) as Promise<boolean>,
+  configUpdateLastReportDate: (date: string) =>
+    ipcRenderer.invoke("config:update-last-report-date", date) as Promise<void>,
   configGet: () =>
     ipcRenderer.invoke("config:get") as Promise<{
       keepInBackground: boolean;
       lastReportDate: string | null;
     }>,
-  configUpdateLastReportDate: (date: string) =>
-    ipcRenderer.invoke("config:update-last-report-date", date) as Promise<void>,
-
-  // ? One Way IPC handlers
-  onRunScan: (callback: () => void) => ipcRenderer.on("run-scan", callback),
+  onRunScan: (callback: () => void) => {
+    ipcRenderer.on("run-scan", callback);
+  },
 });

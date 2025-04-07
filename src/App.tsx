@@ -3,6 +3,7 @@ import Layout from "./components/layout/Layout";
 import Scan from "./pages/Scan";
 import Settings from "./pages/Settings";
 import { ScanProvider } from "./context/ScanContext";
+import { ReportProvider } from "./context/ReportContext";
 import { useSettingsStore } from "@/lib/settings";
 import { useEffect } from "react";
 import { DeviceDataProvider } from "./context/DeviceDataContext";
@@ -21,15 +22,17 @@ export default function App() {
   return (
     <HashRouter>
       <DeviceDataProvider>
-        <ScanProvider>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Navigate to="/scan" />} />
-              <Route path="/scan" element={<Scan />} />
-              <Route path="/settings" element={<Settings />} />
-            </Routes>
-          </Layout>
-        </ScanProvider>
+        <ReportProvider>
+          <ScanProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/scan" />} />
+                <Route path="/scan" element={<Scan />} />
+                <Route path="/settings" element={<Settings />} />
+              </Routes>
+            </Layout>
+          </ScanProvider>
+        </ReportProvider>
       </DeviceDataProvider>
     </HashRouter>
   );
