@@ -71,7 +71,7 @@ function SecurityCheck({
 }
 
 export default function Scan() {
-  const { status, startScan, results } = useScan();
+  const { status, startScan, results, scanDuration } = useScan();
   const { reportStatus, sendReport, getLastReport, checkReportPrerequisites } =
     useReport();
   const [lastReport, setLastReport] = useState<securityReport | null>(null);
@@ -279,6 +279,14 @@ export default function Scan() {
           )}
         </CardContent>
       </Card>
+
+      {scanDuration !== null && status !== "running" && status !== "idle" && (
+        <div className="text-sm text-center text-muted-foreground mt-2">
+          <div className="flex items-center justify-center gap-2">
+            <span>Scan completed in {scanDuration}ms</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
